@@ -1,55 +1,43 @@
-'use client';
+"use client";
 
-import React, { useRef, useEffect } from 'react';
-import * as THREE from 'three';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { WebGLRenderer } from 'three';
+import React from 'react';
+import { Canvas } from '@react-three/fiber';
+import { useGLTF, OrbitControls } from '@react-three/drei';
 
-const ThreeScene = () => {
-  const meshRef = useRef<THREE.Mesh>(null);
-
-  useEffect(() => {
-  const renderer = new WebGLRenderer({ antialias: true });
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  document.body.appendChild(renderer.domElement);
-
-  const loader = new GLTFLoader();
-  loader.load(
-      '/medieval_camp.glb',
-      (gltf) => {
-        gltf.scene.traverse((child) => {
-          if ((child as THREE.Mesh).isMesh) {
-            // Optional: Adjust material properties here
-            
-          }
-        });
-        if (meshRef.current) {
-          meshRef.current.add(gltf.scene);
-        }
-      },
-      (xhr) => {
-        console.log((xhr.loaded / xhr.total * 100) + '% loaded');
-      },
-      (error) => {
-        console.error('An error happened loading the GLB:', error);
-      }
+function Model() {
+    const gltf = useGLTF("/phoenix_bird.glb");
+    return (
+        <primitive object={gltf.scene}
+            scale={0.005}
+            rotation={[0, 0, 0]}
+            position={[0, 0, 0]}
+        />
     );
+}
 
-    
+// Function to load a GLTF model
+function LoadGltfModel() {
+    const gltf = useGLTF("/medieval_camp.glb");
+    return (
+        <primitive object={gltf.scene}
+            scale={1}
+            rotation={[0, 0, 0]}
+            position={[0, 0, 0]}
+        />
+    );
+}
 
-    return () => {
-      // Dispose of resources here
-    };
-  }, []);
-
-
-
-  return (
-    <mesh ref={meshRef}>
-      <boxGeometry />
-      <meshStandardMaterial />
-    </mesh>
-  );
-};
-
-export default ThreeScene;
+export default function ThreeScene() {
+    return (
+        <Canvas style={{ background: 'skyblue' }}>
+            <OrbitControls />
+            <axesHelper args={[5]} />
+            <gridHelper args={[100, 100]} position={[0, 0, 0]} />
+            <ambientLight intensity={0.5} />
+            <pointLight position={[20, 20, 20]} intensity={1} />
+            <directionalLight position={[0, 10, 0]} intensity={1} />
+            <Model />
+            <LoadGltfModel />
+        </Canvas>
+    );
+}

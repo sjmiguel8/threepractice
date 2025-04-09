@@ -1,22 +1,20 @@
-import { Canvas } from '@react-three/fiber'
+"use client";
+import dynamic from 'next/dynamic';
+import React, { Suspense } from 'react';
 
-function Model() {
-    return (
-        <mesh rotation={[Math.PI, 0, 0]}>
-            <boxGeometry />
-            <meshStandardMaterial />
-        </mesh>
-    )
-}
+const ThreeScene = dynamic(() => import('@/components/ThreeScene'), {
+    ssr: false,
+    loading: () => <div>Loading...</div>,
+});
 
 export default function Home() {
     return (
-        <Canvas style={{ background: 'skyblue' }}>
-            <ambientLight intensity={20.5} />
-            <pointLight position={[20, 20, 20]} />
-            <Model />
-            </Canvas>
-    )
+        <div style={{ width: '100vw', height: '100vh' }}>
+            <Suspense fallback={<div>Loading 3D scene...</div>}>
+                <ThreeScene />
+            </Suspense>
+        </div>
+    );
 }
 
 
