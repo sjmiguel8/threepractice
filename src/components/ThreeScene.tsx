@@ -5,11 +5,11 @@ import { Canvas } from '@react-three/fiber';
 import { useGLTF, OrbitControls } from '@react-three/drei';
 
 function Model() {
-    const gltf = useGLTF("/phoenix_bird.glb");
+    const gltf = useGLTF("/lowpoly_animated_warrior.glb");
     return (
         <primitive object={gltf.scene}
-            scale={0.005}
-            rotation={[0, 0, 0]}
+            scale={0.6}
+            rotation={[0, 10, 0]}
             position={[0, 0, 0]}
         />
     );
@@ -17,12 +17,12 @@ function Model() {
 
 // Function to load a GLTF model
 function LoadGltfModel() {
-    const gltf = useGLTF("/medieval_camp.glb");
+    const gltf = useGLTF("/the_king_s_hall.glb");
     return (
         <primitive object={gltf.scene}
             scale={1}
             rotation={[0, 0, 0]}
-            position={[0, 0, 0]}
+            position={[1, 1.3, -6]}
         />
     );
 }
