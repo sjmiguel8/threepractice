@@ -26,13 +26,13 @@ const useGLTF = (path: string): THREE.Group => {
 // Load the King's Hall model
 const CookieMap = () => {
     const gltf = useGLTF("/cookie_map_squid_game.glb");
-    return <primitive object={gltf} position={[0, 50, 0]} scale={50} />;
+    return <primitive object={gltf} position={[0, 46.8, 0]} scale={50} />;
 };
 
 // Load the Pokemon Center model
 const PokemonCenter = () => {
     const gltf = useGLTF("/pokemon_rse_-_pokemon_center.glb");
-    return <primitive object={gltf} position={[0, 0, 0]} scale={50} />;
+    return <primitive object={gltf} position={[0, -2.5, 0]} scale={50} />;
 };
 
 // Main character model with controls
@@ -147,7 +147,7 @@ const Character = () => {
         <primitive
             ref={characterRef}
             object={gltf}
-            scale={0.6}
+            scale={0.8}
             name="character"
         />
     );
@@ -169,7 +169,7 @@ function GameCamera() {
         <PerspectiveCamera
             ref={cameraRef}
             makeDefault
-            position={[0, 10, 10]}
+            position={[0, 50, 10]}
             fov={50}
         />
     );
@@ -276,7 +276,7 @@ export default function ThreeScene({ }: ThreeSceneProps) {
                 <Ground />
                 {/* Helpers */}
                 <axesHelper args={[5]} />
-                <gridHelper args={[100, 100]} position={[0, 0.01, 0]} />
+                <gridHelper args={[100, 100]} position={[0, -2, 0]} />
 
                 {/* Game objects based on current scene */}
                 {currentScene === SceneType.CookieMap ? (
