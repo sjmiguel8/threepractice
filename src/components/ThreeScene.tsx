@@ -13,7 +13,7 @@ enum MovementMode {
 
 // Scene type enum
 enum SceneType {
-  KING_HALL = 'kingHall',
+  CookieMap = 'cookieMap',
   POKEMON_CENTER = 'pokemonCenter'
 }
 
@@ -24,34 +24,33 @@ const useGLTF = (path: string): THREE.Group => {
 };
 
 // Load the King's Hall model
-const KingsHall = () => {
-    const gltf = useGLTF("/the_king_s_hall.glb");
-    return <primitive object={gltf} position={[0, 0, 0]} scale={10.5} />;
+const CookieMap = () => {
+    const gltf = useGLTF("/cookie_map_squid_game.glb");
+    return <primitive object={gltf} position={[0, 50, 0]} scale={50} />;
 };
 
 // Load the Pokemon Center model
 const PokemonCenter = () => {
     const gltf = useGLTF("/pokemon_rse_-_pokemon_center.glb");
-    return <primitive object={gltf} position={[0, 0, 0]} scale={10.5} />;
+    return <primitive object={gltf} position={[0, 0, 0]} scale={50} />;
 };
 
 // Main character model with controls
 const Character = () => {
-    const gltf = useGLTF("/lowpoly_animated_warrior.glb");
-    const [position, setPosition] = useState(new THREE.Vector3(0, 0, 0));
-const [rotation, setRotation] = useState(new THREE.Euler(0, 0, 0));
+    const gltf = useGLTF("/abel__lowpoly_character.glb");
+    const [position, setPosition] = useState(new THREE.Vector3(0, 6.7, 0));
+    const [rotation, setRotation] = useState(new THREE.Euler(0, 0, 0));
     const [movementMode, setMovementMode] = useState(MovementMode.IDLE);
 
     const characterRef = useRef<THREE.Group>(null);
     const { camera, scene, gl } = useThree();
-    
-    const speed = 0.1;
+
+    const speed = 0.3;
     const rotationSpeed = 0.1;
-    const clickMoveSpeed = 0.05;
-    
+
     // Track pressed keys for smoother movement
     const keysPressed = useRef<Record<string, boolean>>({});
-    
+
     // Handle keyboard movement
     useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {
@@ -60,95 +59,89 @@ const [rotation, setRotation] = useState(new THREE.Euler(0, 0, 0));
                 setMovementMode(MovementMode.KEYBOARD);
             }
         };
-        
+
         const handleKeyUp = (event: KeyboardEvent) => {
             keysPressed.current[event.key.toLowerCase()] = false;
-            
+
             // Check if any movement keys are still pressed
             if (!['w', 'a', 's', 'd'].some(key => keysPressed.current[key])) {
                 setMovementMode(MovementMode.IDLE);
             }
         };
-        
+
         window.addEventListener('keydown', handleKeyDown);
         window.addEventListener('keyup', handleKeyUp);
-        
+
         return () => {
             window.removeEventListener('keydown', handleKeyDown);
             window.removeEventListener('keyup', handleKeyUp);
         };
     }, []);
-    
+
     // Animation loop for movement and rotation
     useFrame((_, delta) => {
         if (!characterRef.current) return;
-        
+
         let moveX = 0;
         let moveZ = 0;
         let targetRotation = rotation;
         let moved = false;
-        
+
         // Handle keyboard movement
         if (movementMode === MovementMode.KEYBOARD) {
-            // Calculate movement based on pressed keys
+            const forwardVector = new THREE.Vector3();
+            camera.getWorldDirection(forwardVector);
+            forwardVector.y = 0;
+            forwardVector.normalize();
+
+            const sideVector = new THREE.Vector3();
+            sideVector.crossVectors(camera.up, forwardVector);
+            sideVector.normalize();
+
             if (keysPressed.current['w']) {
-                moveZ -= speed;
-                targetRotation = new THREE.Euler(0, Math.PI, 0);
+                moveX += forwardVector.x;
+                moveZ += forwardVector.z;
                 moved = true;
             }
             if (keysPressed.current['s']) {
-                moveZ += speed;
-                targetRotation = new THREE.Euler(0, 0, 0);
+                moveX -= forwardVector.x;
+                moveZ -= forwardVector.z;
                 moved = true;
             }
             if (keysPressed.current['a']) {
-                moveX -= speed;
-                targetRotation = new THREE.Euler(0, Math.PI / 2, 0);
+                moveX += sideVector.x;
+                moveZ += sideVector.z;
                 moved = true;
             }
             if (keysPressed.current['d']) {
-                moveX += speed;
-                targetRotation = new THREE.Euler(0, -Math.PI / 2, 0);
+                moveX -= sideVector.x;
+                moveZ -= sideVector.z;
                 moved = true;
             }
-            
-            // Handle diagonal movement
-            if ((keysPressed.current['w'] && keysPressed.current['a']) ||
-                (keysPressed.current['w'] && keysPressed.current['d']) ||
-                (keysPressed.current['s'] && keysPressed.current['a']) ||
-                (keysPressed.current['s'] && keysPressed.current['d'])) {
-                
-                // Normalize diagonal movement to prevent faster diagonal speed
-                const length = Math.sqrt(moveX * moveX + moveZ * moveZ);
-                if (length > 0) {
-                    moveX = (moveX / length) * speed;
-                    moveZ = (moveZ / length) * speed;
-                }
-                
-                // Calculate rotation for diagonal movement
-                targetRotation = new THREE.Euler(0, Math.atan2(moveX, -moveZ), 0);
-            }
-            
+
             if (moved) {
-                // Apply movement
+                const moveVector = new THREE.Vector3(moveX, 0, moveZ).normalize().multiplyScalar(speed);
                 setPosition(prev => new THREE.Vector3(
-                    prev.x + moveX,
+                    prev.x + moveVector.x,
                     prev.y,
-                    prev.z + moveZ
+                    prev.z + moveVector.z
                 ));
+
+                // Calculate rotation based on movement direction
+                targetRotation = new THREE.Euler(0, Math.atan2(moveVector.x, moveVector.z), 0);
             }
         }
-        
+
         // Smoothly interpolate rotation towards target rotation
         if (moved && characterRef.current) {
             characterRef.current.rotation.y += (targetRotation.y - characterRef.current.rotation.y) * rotationSpeed;
             setRotation(new THREE.Euler(0, characterRef.current.rotation.y, 0));
         }
-        
+
         // Update character position
         characterRef.current.position.copy(position);
     });
-    
+
 
     return (
         <primitive
@@ -237,14 +230,14 @@ interface ThreeSceneProps {
 const NUM_COINS = 10;
 
 export default function ThreeScene({ }: ThreeSceneProps) {
-    const [currentScene, setCurrentScene] = useState<SceneType>(SceneType.KING_HALL);
+    const [currentScene, setCurrentScene] = useState<SceneType>(SceneType.CookieMap);
     const maxZoomDistance = 100;
 
     const toggleScene = () => {
         setCurrentScene(prev =>
-            prev === SceneType.KING_HALL ?
+            prev === SceneType.CookieMap ?
                 SceneType.POKEMON_CENTER :
-                SceneType.KING_HALL
+                SceneType.CookieMap
         );
     };
 
@@ -286,10 +279,10 @@ export default function ThreeScene({ }: ThreeSceneProps) {
                 <gridHelper args={[100, 100]} position={[0, 0.01, 0]} />
 
                 {/* Game objects based on current scene */}
-                {currentScene === SceneType.KING_HALL ? (
+                {currentScene === SceneType.CookieMap ? (
                     <>
                         <Character />
-                        <KingsHall />
+                        <CookieMap />
                         {/* Coins */}
                         {Array.from({ length: NUM_COINS }).map((_, i) => (
                             <Coin key={i} boundary={[-10, 10, -10, 10]} />
