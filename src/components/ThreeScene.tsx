@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { useGLTF as useGLTFDraco, OrbitControls, PerspectiveCamera } from '@react-three/drei';
+import { useGLTF as useGLTFDraco, OrbitControls, PerspectiveCamera, Gltf } from '@react-three/drei';
 import * as THREE from 'three';
 
 // Movement mode enum to handle different control states
@@ -13,7 +13,7 @@ enum MovementMode {
 
 // Scene type enum
 enum SceneType {
-  CookieMap = 'cookieMap',
+  HOME = 'home',
   POKEMON_CENTER = 'pokemonCenter'
 }
 
@@ -23,16 +23,17 @@ const useGLTF = (path: string): THREE.Group => {
     return scene as THREE.Group;
 };
 
-// Load the King's Hall model
-const CookieMap = () => {
-    const gltf = useGLTF("/cookie_map_squid_game.glb");
-    return <primitive object={gltf} position={[0, 46.8, 0]} scale={50} />;
+// Load the Home model
+const Home = () => {
+    const gltf = useGLTF("/ground.glb");
+    return <primitive object={gltf} position={[0, -2.5, 0]} scale={[19.1, 0.1, 19.1]} />;
 };
+    
 
 // Load the Pokemon Center model
 const PokemonCenter = () => {
     const gltf = useGLTF("/pokemon_rse_-_pokemon_center.glb");
-    return <primitive object={gltf} position={[0, -2.5, 0]} scale={50} />;
+    return <primitive object={gltf} position={[20, -2.5, 20]} scale={0.1} />;
 };
 
 // Main character model with controls
@@ -157,6 +158,7 @@ function Ground() {
         <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]} name="ground">
             <planeGeometry args={[100, 100]} />
             <meshStandardMaterial visible={false} />
+            <primitive object={useGLTF("/ground.glb")} scale={1} />
         </mesh>
     );
 }
@@ -170,7 +172,7 @@ function GameCamera() {
             ref={cameraRef}
             makeDefault
             position={[0, 50, 10]}
-            fov={50}
+            fov={20}
         />
     );
 }
@@ -230,14 +232,14 @@ interface ThreeSceneProps {
 const NUM_COINS = 10;
 
 export default function ThreeScene({ }: ThreeSceneProps) {
-    const [currentScene, setCurrentScene] = useState<SceneType>(SceneType.CookieMap);
+    const [currentScene, setCurrentScene] = useState<SceneType>(SceneType.HOME);
     const maxZoomDistance = 100;
 
     const toggleScene = () => {
         setCurrentScene(prev =>
-            prev === SceneType.CookieMap ?
+            prev === SceneType.HOME ?
                 SceneType.POKEMON_CENTER :
-                SceneType.CookieMap
+                SceneType.HOME
         );
     };
 
@@ -251,7 +253,7 @@ export default function ThreeScene({ }: ThreeSceneProps) {
                 <OrbitControls
                     target={[0, 0, 0]}
                     maxPolarAngle={Math.PI / 2 - 0.1} // Prevent going below ground
-                    minDistance={5}
+                    minDistance={2}
                     maxDistance={maxZoomDistance}
                 />
                 {/* Lighting */}
@@ -279,10 +281,10 @@ export default function ThreeScene({ }: ThreeSceneProps) {
                 <gridHelper args={[100, 100]} position={[0, -2, 0]} />
 
                 {/* Game objects based on current scene */}
-                {currentScene === SceneType.CookieMap ? (
+                {currentScene === SceneType.HOME ? (
                     <>
                         <Character />
-                        <CookieMap />
+                        <Home />
                         {/* Coins */}
                         {Array.from({ length: NUM_COINS }).map((_, i) => (
                             <Coin key={i} boundary={[-10, 10, -10, 10]} />
